@@ -1,0 +1,50 @@
+printf("Load lwIP")
+lwip = create_library("lwip")
+
+local config = ...
+assert(config ~= nil, "lwIP config not defined")
+assert(config.lwipopts_path ~= nil, "lwIP config lwipopts_path not defined")
+assert(exists(config.lwipopts_path), "lwIP config lwipopts_path not found ("..config.lwipopts_path..")")
+assert(config.port_path ~= nil, "lwIP config port_path not defined")
+assert(exists(config.port_path), "lwIP config port_path not found ("..config.port_path..")")
+
+lwip:add_sources({
+    "./src/netif/*.c",
+    "./src/core/*.c",
+    "./src/core/ipv4/*.c",
+})
+
+if config.ipv6 then
+    printf(" - IPv4/6");
+    lwip:add_sources({
+        "./src/core/ipv6/*.c",
+    })
+    lwip:add_definitions("public", "LWIP_IPV4=1")
+    lwip:add_definitions("public", "LWIP_IPV6=1")
+    lwip:add_definitions("public", "NO_SYS=1")
+else
+    printf(" - IPv4 Only");
+    lwip:add_definitions("public", "LWIP_IPV4=1")
+    lwip:add_definitions("public", "LWIP_IPV6=0")
+    lwip:add_definitions("public", "NO_SYS=1")
+end
+
+lwip:add_include_paths("public", "./src/include")
+
+lwip:add_include_paths("public", config.lwipopts_path)
+lwip:add_include_paths("public", config.port_path.."/include")
+
+lwip:create_precompiled_header({
+    "<stdint.h>",
+    "<stddef.h>",
+    "<stdbool.h>",
+    "<stdlib.h>",
+    "<stdio.h>",
+    "<lwipopts.h>",
+})
+
+if _G.CFXS_TOOLCHAIN == "GCC" or _G.CFXS_TOOLCHAIN == "Clang" then
+    lwip:add_compile_options("private", {
+        "-Wno-stringop-overflow"
+    })
+end
