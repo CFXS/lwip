@@ -15,7 +15,7 @@ lwip:add_sources({
 })
 
 if config.ipv6 then
-    printf(" - IPv4/6");
+    printf(" - IPv4/6")
     lwip:add_sources({
         "./src/core/ipv6/*.c",
     })
@@ -27,6 +27,13 @@ else
     lwip:add_definitions("public", "LWIP_IPV4=1")
     lwip:add_definitions("public", "LWIP_IPV6=0")
     lwip:add_definitions("public", "NO_SYS=1")
+end
+
+if config.dhcp then
+    printf(" - DHCP")
+    lwip:add_definitions("public", "LWIP_DHCP=1")
+    lwip:add_definitions("public", "DHCP_COARSE_TIMER_SECS=60") -- recommended 60
+    lwip:add_definitions("public", "DHCP_FINE_TIMER_MSECS=500") -- recommended 500
 end
 
 lwip:add_include_paths("public", "./src/include")
