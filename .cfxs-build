@@ -1,12 +1,12 @@
 printf("Load lwIP")
-lwip = create_library("lwip")
+_G.lwip = create_library("lwip")
 
 local config = ...
 assert(config ~= nil, "lwIP config not defined")
 assert(config.lwipopts_path ~= nil, "lwIP config lwipopts_path not defined")
-assert(exists(config.lwipopts_path), "lwIP config lwipopts_path not found ("..config.lwipopts_path..")")
+assert(exists(config.lwipopts_path), "lwIP config lwipopts_path not found (" .. config.lwipopts_path .. ")")
 assert(config.port_path ~= nil, "lwIP config port_path not defined")
-assert(exists(config.port_path), "lwIP config port_path not found ("..config.port_path..")")
+assert(exists(config.port_path), "lwIP config port_path not found (" .. config.port_path .. ")")
 
 lwip:add_sources({
     "./src/netif/*.c",
@@ -39,7 +39,7 @@ end
 lwip:add_include_paths("public", "./src/include")
 
 lwip:add_include_paths("public", config.lwipopts_path)
-lwip:add_include_paths("public", config.port_path.."/include")
+lwip:add_include_paths("public", config.port_path .. "/include")
 
 lwip:create_precompiled_header({
     "<stdint.h>",
