@@ -12,6 +12,7 @@ lwip:add_sources({
     "./src/netif/*.c",
     "./src/core/*.c",
     "./src/core/ipv4/*.c",
+    "!tcp",
 })
 
 if config.ipv6 then
@@ -27,6 +28,32 @@ else
     lwip:add_definitions("public", "LWIP_IPV4=1")
     lwip:add_definitions("public", "LWIP_IPV6=0")
     lwip:add_definitions("public", "NO_SYS=1")
+end
+
+if config.tcp ~= nil and config.tcp ~= false then
+    assert(type(config.tcp) == "table", "lwIP config tcp must be a table")
+    assert(config.tcp.mss ~= nil, "lwIP config tcp.mss not defined")
+    assert(config.tcp.wnd_multiplier ~= nil, "lwIP config tcp.wnd_multiplier not defined")
+    assert(config.tcp.snd_buf_multiplier ~= nil, "lwIP config tcp.snd_buf_multiplier not defined")
+    assert(type(config.tcp.mss) == "number", "lwIP config tcp.mss must be a number")
+    assert(type(config.tcp.wnd_multiplier) == "number", "lwIP config tcp.wnd_multiplier must be a number")
+    assert(type(config.tcp.snd_buf_multiplier) == "number", "lwIP config tcp.snd_buf_multiplier must be a number")
+
+    print(" - TCP")
+    lwip:add_definitions("public", {
+        "LWIP_TCP=1",
+        "TCP_MSS=" .. config.tcp.mss,
+        "TCP_WND=(" .. config.tcp.wnd_multiplier .. " * TCP_MSS)",
+        "TCP_SND_BUF=(" .. config.tcp.snd_buf_multiplier .. " * TCP_MSS)",
+        "TCP_QUEUE_OOSEQ=1",
+        "LWIP_TCP_SACK_OUT=1",
+    })
+
+    lwip:add_sources({
+        "./src/core/tcp/*.c",
+    })
+else
+    lwip:add_definitions("public", "LWIP_TCP=0")
 end
 
 if config.dhcp then
