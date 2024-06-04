@@ -20,14 +20,18 @@ if config.ipv6 then
     lwip:add_sources({
         "./src/core/ipv6/*.c",
     })
-    lwip:add_definitions("public", "LWIP_IPV4=1")
-    lwip:add_definitions("public", "LWIP_IPV6=1")
-    lwip:add_definitions("public", "NO_SYS=1")
+    lwip:add_definitions("public", {
+        "LWIP_IPV4=1",
+        "LWIP_IPV6=1",
+        "NO_SYS=1"
+    })
 else
-    printf(" - IPv4 Only");
-    lwip:add_definitions("public", "LWIP_IPV4=1")
-    lwip:add_definitions("public", "LWIP_IPV6=0")
-    lwip:add_definitions("public", "NO_SYS=1")
+    printf(" - IPv4");
+    lwip:add_definitions("public", {
+        "LWIP_IPV4=1",
+        "LWIP_IPV6=0",
+        "NO_SYS=1"
+    })
 end
 
 if config.tcp ~= nil and config.tcp ~= false then
@@ -35,22 +39,33 @@ if config.tcp ~= nil and config.tcp ~= false then
     assert(config.tcp.mss ~= nil, "lwIP config tcp.mss not defined")
     assert(config.tcp.wnd_multiplier ~= nil, "lwIP config tcp.wnd_multiplier not defined")
     assert(config.tcp.snd_buf_multiplier ~= nil, "lwIP config tcp.snd_buf_multiplier not defined")
+    assert(config.tcp.max_listen_pcbs ~= nil, "lwIP config tcp.max_listen_pcbs not defined")
     assert(type(config.tcp.mss) == "number", "lwIP config tcp.mss must be a number")
     assert(type(config.tcp.wnd_multiplier) == "number", "lwIP config tcp.wnd_multiplier must be a number")
     assert(type(config.tcp.snd_buf_multiplier) == "number", "lwIP config tcp.snd_buf_multiplier must be a number")
+    assert(type(config.tcp.max_listen_pcbs) == "number", "lwIP config tcp.max_listen_pcbs must be a number")
 
-    print(" - TCP")
+    printf(" - TCP")
+    printf("   - MSS: %d", config.tcp.mss)
+    printf("   - WND Multiplier: %d", config.tcp.wnd_multiplier)
+    printf("   - SND_BUF Multiplier: %d", config.tcp.snd_buf_multiplier)
+    printf("   - OOSEQ enabled")
+    printf("   - SACK_OUT enabled")
+
     lwip:add_definitions("public", {
         "LWIP_TCP=1",
+        "MEMP_NUM_TCP_PCB_LISTEN=" .. config.tcp.max_listen_pcbs,
         "TCP_MSS=" .. config.tcp.mss,
-        "TCP_WND=(" .. config.tcp.wnd_multiplier .. " * TCP_MSS)",
-        "TCP_SND_BUF=(" .. config.tcp.snd_buf_multiplier .. " * TCP_MSS)",
+        "TCP_WND=(" .. config.tcp.wnd_multiplier .. "*TCP_MSS)",
+        "TCP_SND_BUF=(" .. config.tcp.snd_buf_multiplier .. "*TCP_MSS)",
         "TCP_QUEUE_OOSEQ=1",
         "LWIP_TCP_SACK_OUT=1",
     })
 
     lwip:add_sources({
-        "./src/core/tcp/*.c",
+        "./src/core/tcp.c",
+        "./src/core/tcp_in.c",
+        "./src/core/tcp_out.c",
     })
 else
     lwip:add_definitions("public", "LWIP_TCP=0")
@@ -58,9 +73,11 @@ end
 
 if config.dhcp then
     printf(" - DHCP")
-    lwip:add_definitions("public", "LWIP_DHCP=1")
-    lwip:add_definitions("public", "DHCP_COARSE_TIMER_SECS=60") -- recommended 60
-    lwip:add_definitions("public", "DHCP_FINE_TIMER_MSECS=500") -- recommended 500
+    lwip:add_definitions("public", {
+        "LWIP_DHCP=1",
+        "DHCP_COARSE_TIMER_SECS=60",
+        "DHCP_FINE_TIMER_MSECS=500"
+    })
 end
 
 lwip:add_include_paths("public", "./src/include")

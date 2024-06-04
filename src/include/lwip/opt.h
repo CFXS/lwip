@@ -1596,7 +1596,7 @@
     #if !defined PBUF_LINK_HLEN || defined __DOXYGEN__
         #if (defined LWIP_HOOK_VLAN_SET || LWIP_VLAN_PCP) && !defined __DOXYGEN__
             #define PBUF_LINK_HLEN (18 + ETH_PAD_SIZE)
-        #else /* LWIP_HOOK_VLAN_SET || LWIP_VLAN_PCP */
+        #else  /* LWIP_HOOK_VLAN_SET || LWIP_VLAN_PCP */
             #define PBUF_LINK_HLEN (14 + ETH_PAD_SIZE)
         #endif /* LWIP_HOOK_VLAN_SET || LWIP_VLAN_PCP */
     #endif
